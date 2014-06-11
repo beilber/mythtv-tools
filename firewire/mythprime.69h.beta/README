@@ -1,0 +1,140 @@
+
+mythprime - a cable STB firewire connection primer for mythbuntu/MythTV
+
+Developed by: majoridiot
+README Version 1
+(C)2008 by the mythbuntu Development Team
+
+Incorporates code (C)by: Jim Lohmeyer, Jim Westfall, Dan Dennedy, Stacy D. Son, 
+                         Matt Porter and Chris Ingrassia, et. al.
+
+Distributed as part of the mythbuntu distribution of MythTV under GPL v2 and later.
+
+***************************************************************************
+License:
+
+This Package is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+This package is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this package; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+****************************************************************************
+INSTALLATION
+============
+
+The following packages are required to compile mythprime in an Ubuntu/mythbuntu 
+environment:
+
+ * build-essential
+ * libraw1394-dev
+ * libiec61883-dev
+ * libavc1394-dev
+
+You can install these packages with Synaptic, or via apt-get.
+
+If compiling in a different environment, you will need to ensure the necessary build 
+packages and development libraries are installed.
+
+To compile, from inside the mythprime directory, do:
+
+   $ make clean
+   $ make
+   $ sudo make install
+
+The primer executable "mythprime" will be installed to /usr/bin
+
+GENERAL INFO
+=================
+
+mythprime is a utility to "prime" firewire connections to cable Set-Top-Boxes (STBS),
+in order to stabilize the connection for recording with mythtv.
+
+It attempts to intelligently identify the connected STB(s), pick the correct method
+of priming (p2p or broadcast) and selects the appropriate channel changer to use-
+(if required).  It will make multiple attemps, with success or errors reported and
+can be run in verbose mode (-v) from the command line for troubleshooting bad or
+troublesome connetions.
+
+USING mythprime
+=================
+
+*** It is *highly recommended* to test and prime with the MythTV backend server stopped ***
+
+to stop the backend:
+
+ $ sudo /etc/init.d/mythtv-backend stop
+
+Replace "stop" with "start" in the preceding command to restart the backend when
+you are finished with any command-line testing.
+
+The command syntax for mythprime is:
+
+ $ mythprime [OPTION]...
+
+Mandatory arguments: none
+
+ Options:
+    
+    -c <channel number> tune to safe <channel> before priming
+    -f <changer> force channel changer:
+        1 = SA3250HD
+        2 = SA4200HD (and some 3250s)
+        3 = SA4250HDC
+        4 = SA4250HDC alternate (and 4240HDCs with 4250 firmware)
+        5 = SA8300
+        6 = Motorola Fast (DCH and DCT series)
+        7 = Motorola alternate
+     -h display this help and exit
+     -P power on STB (default: no)
+     -R reset firewire bus before doing anything else (default: no)
+     -v verbose output
+     -V Display version information and exit
+
+OPTION OVERVIEW
+===============
+
+-c <channel number>         Tune this channel number before attempting to prime.  This is
+                            useful in helping assure you get a good prime the first time,
+                            by tuning the STB to a known-unencrypted and prime-able channel.
+
+-f <changer>                If your STB is detected incorrectly or if the channel changer
+                            mythprime selects does not work, you can force the use of another
+                            changer with this option.
+
+-h                          Displays help info and exits
+
+-P                          Power on the STB before priming- default: no.  Use this option if
+                            you or MythTV routinely powers down your STB.
+
+-R                          Performs a bus reset BEFORE doing anything else.  This option is
+                            useful for some STBs that jump to a new node on the first bus reset.
+                            Setting this option should ensure that the STB will jump to, and
+                            (hopefully) remain on, the same node during the entire session.  It
+                            is also a useful option for very unstable STBs like like the firewire
+                            bus reset before connections are made.
+                            
+-v                          Verbose output- will display *everything* mythprime is doing, to help
+                            with troubleshooting and debugging.
+                            
+-V                          Displays version number and exits
+              
+
+Most users should have good success running mythprime without any options.  
+
+Should you need to add additional options, e.g.: -P or -R, etc., then you 
+will need to add them to the mythprime launch command in:
+
+/etc/init.d/mythtv-backend
+
+(remember to edit it as sudo)
+
+--end 1.0--
