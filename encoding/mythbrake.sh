@@ -112,18 +112,18 @@ outfile="$mythrecordingsdir/$filename"
 #Variables finished
 
 #DO SOME LOGGING
-echo "Transcode job $title starting at $scriptstarttime" >> "$logfile"
-echo "Original file: $mythrecordingsdir/$file" >> "$logfile"
-echo "Target file: $outfile" >> "$logfile"
-echo "ChanId: $chanid Time: $starttime" >> "$logfile"
+echo "Transcode job $title starting at $scriptstarttime" |tee -a "$logfile"
+echo "Original file: $mythrecordingsdir/$file" |tee -a "$logfile"
+echo "Target file: $outfile" |tee -a "$logfile"
+echo "ChanId: $chanid Time: $starttime" |tee -a "$logfile"
 
 ######SOURCEFILE CHECK######
 if [ ! -f "$mythrecordingsdir/$file" ]
 then
     #source file does not exist
     scriptstoptime=$(date +%F-%H%M%S)
-    echo "Error at $scriptstoptime: Source file not found " >> "$logfile"
-    echo "Maybe wrong path or missing permissions?" >> "$logfile"
+    echo "Error at $scriptstoptime: Source file not found " |tee -a "$logfile"
+    echo "Maybe wrong path or missing permissions?" |tee -a "$logfile"
     mail -s "Mythtv Sourcefile Error on $HOSTNAME" "$errormail" < "$logfile"
     mv "$logfile" "$logfile-FAILED"
     exit 1
@@ -136,42 +136,43 @@ audiodownmix="stereo"
 
 ### Transcoding starts here, in 3 differend versions: HDTV w/o commercials, SDTV w/ and w/o commercials.
 
-echo "Userjob Mythbrake Encoding starts" >> "$logfile"
+echo "Userjob Mythbrake Encoding starts" 2|tee -a "$logfile"
 
-#HandBrakeCLI -q 19.0 -e x264 -r 25 -a "$audiotacks" -A "$audioname" -E "$audiocodec" -B "$audiobitrate" -6 "$audiodownmix" -f mp4 --crop 0:0:0:0 -d -m -x b-adapt=2:rc-lookahead=50:ref=3:bframes=3:me=umh:subme=8:trellis=1:merange=20:direct=auto -i "$mythrecordingsdir/$file" -o "$outfile" -4 --optimize 2>> "$logfile"
-HandBrakeCLI -e x264 -f mp4 -i "$mythrecordingsdir/$file" -o "$outfile" --preset "High Profile" | tee -a "$logfile"
+#HandBrakeCLI -q 19.0 -e x264 -r 25 -a "$audiotacks" -A "$audioname" -E "$audiocodec" -B "$audiobitrate" -6 "$audiodownmix" -f mp4 --crop 0:0:0:0 -d -m -x b-adapt=2:rc-lookahead=50:ref=3:bframes=3:me=umh:subme=8:trellis=1:merange=20:direct=auto -i "$mythrecordingsdir/$file" -o "$outfile" -4 --optimize 2|tee -a "$logfile"
+HandBrakeCLI -e x264 -f mp4 -i "$mythrecordingsdir/$file" -o "$outfile" --preset "High Profile" 2>> "$logfile"
 if [ $? != 0 ]
 then
 	if [ ! -f "$outfile" ]
 	then
 		scriptstoptime=$(date +%F-%H%M%S)
-		echo "Transcoding-Error at $scriptstoptime" >> "$logfile"
-		echo "Interrupted file $outfile" >> "$logfile"
-		echo "###################################" >> "$logfile"
+		echo "Transcoding-Error at $scriptstoptime" |tee -a "$logfile"
+		echo "Interrupted file $outfile" |tee -a "$logfile"
+		echo "###################################" |tee -a "$logfile"
 		mail -s "Mythtv No Output File Error on $HOSTNAME" "$errormail" < "$logfile"
 	        mv "$logfile" "$logfile-FAILED"
 		exit 1
 	else
 		scriptstoptime=$(date +%F-%H%M%S)
-        	echo "Transcoding-Error at $scriptstoptime" >> "$logfile"
-	        echo "Interrupted file $outfile" >> "$logfile"
-	        echo "###################################" >> "$logfile"
+        	echo "Transcoding-Error at $scriptstoptime" |tee -a "$logfile"
+	        echo "Interrupted file $outfile" |tee -a "$logfile"
+	        echo "###################################" |tee -a "$logfile"
 	        mail -s "Mythtv No Output File Error on $HOSTNAME" "$errormail" < "$logfile"
 	        mv "$logfile" "$logfile-FAILED"
 	        exit 1
 	fi
 else
-	echo "Transcode Run successfull." >> "$logfile"
-	file "$outfile" >> "$logfile"
+	echo "Transcode Run successfull." |tee -a "$logfile"
+	file "$outfile" |tee -a "$logfile"
  fi
 
 scriptstoptime=$(date +%F-%H%M%S)
-echo "Successfully finished at $scriptstoptime" >> "$logfile"
-echo "Transcoded file: $outfile" >> "$logfile"
+echo "Successfully finished at $scriptstoptime" |tee -a "$logfile"
+echo "Transcoded file: $outfile" |tee -a "$logfile"
 
 #Transcoding now done, following is some maintenance work
-echo "Updating database records..." >> "$logfile"
-mysql -u $DBUserName -p$DBPassword $DBName --batch -e "update recorded set basename = '$filename' where chanid = $chanid and starttime = $starttime" >> "$logfile"
+echo "Updating database records..." |tee -a "$logfile"
+mysql -u $DBUserName -p$DBPassword $DBName --batch -e "update recorded set basename = '$filename' where chanid = '$chanid' and starttime = '$starttime'" | tee -a "$logfile"
+mysql -u $DBUserName -p$DBPassword $DBName --batch -e "update recorded set transcoded = 1 where chanid = '$chanid' and starttime = '$starttime'" | tee -a "$logfile"
 chown mythtv:mythtv $outfile
 chmod 664 $outfile
 mythcommflag --chanid $chanid --starttime $starttime
