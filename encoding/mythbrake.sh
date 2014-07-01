@@ -77,6 +77,7 @@ outdir="/storage/videos/Recordings" # specify directory where you want the trans
 
 
 # Parse /etc/mythtv/mysql.txt - wip
+DBHost=192.168.1.10
 DBPort=3306
 DBUserName=mythtv
 DBName=mythconverg
@@ -116,6 +117,8 @@ echo "Transcode job $title starting at $scriptstarttime" |tee -a "$logfile"
 echo "Original file: $mythrecordingsdir/$file" |tee -a "$logfile"
 echo "Target file: $outfile" |tee -a "$logfile"
 echo "ChanId: $chanid Time: $starttime" |tee -a "$logfile"
+echo "Filename: $filename"  |tee -a "$logfile"
+echo "Infile: $mythrecordingsdir/$file Outfile: $outfile" |tee -a "$logfile"
 
 ######SOURCEFILE CHECK######
 if [ ! -f "$mythrecordingsdir/$file" ]
@@ -129,16 +132,8 @@ then
     exit 1
 fi
 
-# Now generate Handbrake commands from the above####
-audiocodec="faac"
-audiobitrate="128"
-audiodownmix="stereo"
-
-### Transcoding starts here, in 3 differend versions: HDTV w/o commercials, SDTV w/ and w/o commercials.
-
 echo "Userjob Mythbrake Encoding starts" 2|tee -a "$logfile"
 
-#HandBrakeCLI -q 19.0 -e x264 -r 25 -a "$audiotacks" -A "$audioname" -E "$audiocodec" -B "$audiobitrate" -6 "$audiodownmix" -f mp4 --crop 0:0:0:0 -d -m -x b-adapt=2:rc-lookahead=50:ref=3:bframes=3:me=umh:subme=8:trellis=1:merange=20:direct=auto -i "$mythrecordingsdir/$file" -o "$outfile" -4 --optimize 2|tee -a "$logfile"
 HandBrakeCLI -e x264 -f mp4 -i "$mythrecordingsdir/$file" -o "$outfile" --preset "High Profile" 2>> "$logfile"
 if [ $? != 0 ]
 then
@@ -163,18 +158,18 @@ then
 else
 	echo "Transcode Run successfull." |tee -a "$logfile"
 	file "$outfile" |tee -a "$logfile"
- fi
+	scriptstoptime=$(date +%F-%H%M%S)
+	echo "Successfully finished at $scriptstoptime" |tee -a "$logfile"
+	echo "Transcoded file: $outfile" |tee -a "$logfile"
+	#Transcoding now done, following is some maintenance work
+	echo "Updating database records..." |tee -a "$logfile"
+	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set basename = '$filename' where basename like '$file'" 2>&1 | tee -a "$logfile"
+	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set transcoded = 1 where basename like '$filename'" 2>&1 | tee -a "$logfile"
+	chown mythtv:mythtv $outfile  2>&1 | tee -a "$logfile"
+	chmod 664 $outfile  2>&1 | tee -a "$logfile"
+	/usr/local/bin/mythcommflag --file $outfile  2>&1 | tee -a "$logfile"
+	/usr/local/bin/mythcommflag --file --file --rebuild  2>&1 | tee -a "$logfile"
+	rm -f $mythrecordingsdir/$file*
+fi
 
-scriptstoptime=$(date +%F-%H%M%S)
-echo "Successfully finished at $scriptstoptime" |tee -a "$logfile"
-echo "Transcoded file: $outfile" |tee -a "$logfile"
-
-#Transcoding now done, following is some maintenance work
-echo "Updating database records..." |tee -a "$logfile"
-mysql -u $DBUserName -p$DBPassword $DBName --batch -e "update recorded set basename = '$filename' where chanid = '$chanid' and starttime = '$starttime'" | tee -a "$logfile"
-mysql -u $DBUserName -p$DBPassword $DBName --batch -e "update recorded set transcoded = 1 where chanid = '$chanid' and starttime = '$starttime'" | tee -a "$logfile"
-chown mythtv:mythtv $outfile
-chmod 664 $outfile
-mythcommflag --chanid $chanid --starttime $starttime
-mythcommflag --chanid $chanid --starttime $starttime --rebuild
 exit 0
