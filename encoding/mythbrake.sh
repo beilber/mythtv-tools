@@ -25,6 +25,7 @@
 ######SOME CONSTANSTS FOR USER EDITING######
 logdir="/var/log/mythtv/transcodelogs" #change to your needs for logs
 errormail="spanky@spankythehero.com" # this email address will be informed in case of errors
+maildebug=0
 outdir="/storage/videos/Recordings" # specify directory where you want the transcoded file to be placed
 ######END constants for user editing######
 
@@ -88,6 +89,12 @@ scriptstarttime=$(date +%F-%H%M%S)
 mythrecordingsdir="$1" # specify directory where MythTV stores its recordings
 file="$2"
 infile="$mythrecordingsdir/$file"
+
+if [ ${infile: -4} == ".mp4" ] 
+then
+exit 288
+fi
+
 # using sed to sanitize the variables to avoid problematic file names, only alphanumerical, space, hyphen and underscore allowed, other characters are transformed to underscore
 subtitle="$(echo "$6" | sed 's/[^A-Za-z0-9_ -]/_/g')"
 title="$(echo "$5" | sed 's/[^A-Za-z0-9_ -]/_/g')"
@@ -134,7 +141,7 @@ fi
 
 echo "Userjob Mythbrake Encoding starts" 2|tee -a "$logfile"
 
-HandBrakeCLI -e x264 -f mp4 -i "$mythrecordingsdir/$file" -o "$outfile" --preset "High Profile" 2>> "$logfile"
+HandBrakeCLI -e x264 -f mp4 -i "$mythrecordingsdir/$file" -o "$outfile" --preset "Normal" 2>> "$logfile"
 if [ $? != 0 ]
 then
 	if [ ! -f "$outfile" ]
@@ -163,13 +170,15 @@ else
 	echo "Transcoded file: $outfile" |tee -a "$logfile"
 	#Transcoding now done, following is some maintenance work
 	echo "Updating database records..." |tee -a "$logfile"
+	filesize=$(stat -c%s "$outfile")
 	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set basename = '$filename' where basename like '$file'" 2>&1 | tee -a "$logfile"
 	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set transcoded = 1 where basename like '$filename'" 2>&1 | tee -a "$logfile"
+	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set filesize = '$filesize' where basename like '$filename'" 2>&1 | tee -a "$logfile"
 	chown mythtv:mythtv $outfile  2>&1 | tee -a "$logfile"
 	chmod 664 $outfile  2>&1 | tee -a "$logfile"
 	/usr/local/bin/mythcommflag --file $outfile  2>&1 | tee -a "$logfile"
 	/usr/local/bin/mythcommflag --file --file --rebuild  2>&1 | tee -a "$logfile"
 	rm -f $mythrecordingsdir/$file*
 fi
-
+	
 exit 0
