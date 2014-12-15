@@ -1,0 +1,111 @@
+
+mythchanger - a cable STB firewire channel changer for mythbuntu/MythTV
+
+Developed by: majoridiot
+README Version 1
+(C)2008 by the mythbuntu Development Team
+
+Incorporates code (C)by: Jim Lohmeyer, Jim Westfall, Dan Dennedy, Stacy D. Son, 
+                         Matt Porter and Chris Ingrassia, et. al.
+
+Distributed as part of the mythbuntu distribution of MythTV under GPL v2 and later.
+
+***************************************************************************
+License:
+
+This Package is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+This package is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this package; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+****************************************************************************
+INSTALLATION
+============
+
+The following packages are required to compile mythchanger in an Ubuntu/mythbuntu 
+environment:
+
+ * build-essential
+ * libraw1394-dev
+ * libiec61883-dev
+ * libavc1394-dev
+
+You can install these packages with Synaptic, or via apt-get.
+
+If compiling in a different environment, you will need to ensure the necessary build 
+packages and development libraries are installed.
+
+To compile, from inside the mythchanger directory, do:
+
+   $ make clean
+   $ make
+   $ sudo make install
+
+The changer executable "mythchanger" will be installed to /usr/bin
+
+USING mythchanger
+=================
+
+The command syntax for mythchanger is:
+
+ $ mythchanger -c <channel> [OPTION]...
+
+Mandatory arguments: channel number
+
+ Options:
+    
+    -c <channel number> channel to tune
+    -f <changer> force channel changer:
+        1 = SA3250HD
+        2 = SA4200HD (and some 3250s)
+        3 = SA4250HDC
+        4 = SA4250HDC alternate (and 4240HDCs with 4250 firmware)
+        5 = SA8300
+        6 = Motorola Fast (DCH and DCT series)
+        7 = Motorola alternate
+     -g <GUID> GUID of target STB
+     -h display this help and exit
+     -P power on STB (default: no)
+     -R reset firewire bus before doing anything else (default: no)
+     -v verbose output
+     -V Display version information and exit
+
+OPTION OVERVIEW
+===============
+
+-c <channel number>         The channel you want to tune
+
+-f <changer>                If your STB is detected incorrectly or if the channel changer
+                            mythchanger selects does not work, you can force the use of another
+                            changer with this option.
+
+-g <GUID>                   Changes channel of the STB with the supplied GUID.  This is very
+                            useful for backends with multiple firewire tuners.  Otherwise, the 
+                            default action is to change the channel on the first STB found on
+                            the firewire bus.
+
+-h                          Displays help info and exits
+
+-P                          Power on the STB before channel change- default: no.  Use this option
+                            if you or MythTV routinely powers down your STB.  Also useful to recover
+                            after firmware update on SA STBs, which power off after update.
+
+-R                          Performs a bus reset BEFORE doing anything else.  Use only if *absolutely*
+                            necessary for unstable STBs.
+                            
+-v                          Verbose output- will display *everything* mythchanger is doing, to help
+                            with troubleshooting and debugging.
+                            
+-V                          Displays version number and exits
+              
+
+--end 1.0--
