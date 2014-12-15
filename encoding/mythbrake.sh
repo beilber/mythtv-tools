@@ -176,8 +176,8 @@ else
 	mysql -h $DBHost -u $DBUserName -p$DBPassword $DBName -e "update recorded set filesize = '$filesize' where basename like '$filename'" 2>&1 | tee -a "$logfile"
 	chown mythtv:mythtv $outfile  2>&1 | tee -a "$logfile"
 	chmod 664 $outfile  2>&1 | tee -a "$logfile"
-	/usr/local/bin/mythcommflag --file $outfile  2>&1 | tee -a "$logfile"
-	/usr/local/bin/mythcommflag --file --file --rebuild  2>&1 | tee -a "$logfile"
+	mythcommflag --file $outfile  2>&1 | tee -a "$logfile"
+	mythcommflag --file --file --rebuild  2>&1 | tee -a "$logfile"
 	rm -f $mythrecordingsdir/$file*
 fi
 	
