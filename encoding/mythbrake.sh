@@ -23,10 +23,10 @@
 
 
 ######SOME CONSTANSTS FOR USER EDITING######
-logdir="/var/log/mythtv/transcodelogs" #change to your needs for logs
+logdir="/var/tmp" #change to your needs for logs
 errormail="spanky@spankythehero.com" # this email address will be informed in case of errors
 maildebug=0
-outdir="/storage/videos/Recordings" # specify directory where you want the transcoded file to be placed
+outdir="/storage/videos/recordings" # specify directory where you want the transcoded file to be placed
 ######END constants for user editing######
 
 #mysql> select * from recorded where basename like '1058_20140608043000.mpg' \G
@@ -78,7 +78,7 @@ outdir="/storage/videos/Recordings" # specify directory where you want the trans
 
 
 # Parse /etc/mythtv/mysql.txt - wip
-DBHost=192.168.1.10
+DBHost=localhost
 DBPort=3306
 DBUserName=mythtv
 DBName=mythconverg
