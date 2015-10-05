@@ -177,7 +177,7 @@ else
 	chown mythtv:mythtv $outfile  2>&1 | tee -a "$logfile"
 	chmod 664 $outfile  2>&1 | tee -a "$logfile"
 	mythcommflag --file $outfile  2>&1 | tee -a "$logfile"
-	mythcommflag --file --file --rebuild  2>&1 | tee -a "$logfile"
+	mythcommflag --file $outfile --rebuild  2>&1 | tee -a "$logfile"
 	rm -f $mythrecordingsdir/$file*
 fi
 	
